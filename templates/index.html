@@ -206,6 +206,8 @@
                 const formData = new FormData();
                 formData.append("mode", selectedMode);
                 formData.append("dataType", dataType);
+                formData.append("k", k);
+                formData.append("maxSizes", maxSizesNum.join(','));
 
                 batch.forEach(file => {
                     const parts = file.webkitRelativePath.split('/');
