@@ -83,6 +83,7 @@
                             <th>Método</th>
                             <th>ARI</th>
                             <th>NMI</th>
+                            <th>AMI</th>
                         </tr>
                     </thead>
                     <tbody id="externalBody"></tbody>
@@ -224,7 +225,7 @@
                     console.log(`[FRONTEND] Batch ${Math.floor(i/BATCH_SIZE + 1)}: Enviadas=${batch.length}, Procesadas=${data.processed}, Saltadas=${data.skipped}`);
                     
                     if (data.processed !== batch.length) {
-                        output.textContent += `⚠️  Batch ${Math.floor(i/BATCH_SIZE + 1)}: Se esperaban ${batch.length} pero se procesaron ${data.processed}\n`;
+                        output.textContent += `Batch ${Math.floor(i/BATCH_SIZE + 1)}: Se esperaban ${batch.length} pero se procesaron ${data.processed}\n`;
                     }
 
                     data.results.forEach(item => {
@@ -264,6 +265,7 @@
                             <td><strong>${mode.toUpperCase()}</strong></td>
                             <td>${m.ari}</td>
                             <td>${m.nmi}</td>
+                            <td>${m.ami}</td>
                         </tr>`;
                     
                     intBody.innerHTML += `
