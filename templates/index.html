@@ -46,6 +46,13 @@
                 <input type="text" id="maxSizesInput" value="300, 306, 405, 300" style="width: 150px;">
             </div>
             <div class="input-group">
+                <label>Tipo de Datos:</label>
+                <select id="dataTypeSelect">
+                    <option value="tumores">Tumores</option>
+                    <option value="animales">Animales</option>
+                </select>
+            </div>
+            <div class="input-group">
                 <label>Extractor:</label>
                 <select id="extractorSelect">
                     <option value="hu">Hu Moments</option>
@@ -163,6 +170,7 @@
         async function startProcess() {
             const folderInput = document.getElementById('folderInput');
             const selectedMode = document.getElementById('extractorSelect').value;
+            const dataType = document.getElementById('dataTypeSelect').value;
             const output = document.getElementById('output');
             const btnRun = document.getElementById('btnRun');
 
@@ -197,6 +205,7 @@
                 const batch = allFiles.slice(i, i + BATCH_SIZE);
                 const formData = new FormData();
                 formData.append("mode", selectedMode);
+                formData.append("dataType", dataType);
 
                 batch.forEach(file => {
                     const parts = file.webkitRelativePath.split('/');
