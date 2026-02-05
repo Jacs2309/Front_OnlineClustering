@@ -9,6 +9,8 @@ Este repositorio contiene el **frontend de la aplicación web** desarrollada par
 ## INTEGRANTES
  - Kevin Vallejo
  - Freddy Viracocha
+ - Julian Cañas
+ - John Serrano
 
 ## 🧠 Tecnologías utilizadas
 
