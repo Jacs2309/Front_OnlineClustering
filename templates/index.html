@@ -106,6 +106,13 @@
         </div>
     </div>
 
+    <div class="controls" style="margin-top: 20px;">
+        <h2>Resumen por Cluster (Últimas asignaciones)</h2>
+        <div id="clusterSummary" style="min-height:60px; color:#333;">
+            <em>No hay asignaciones todavía.</em>
+        </div>
+    </div>
+
     <script>
         // Obtener URL del backend desde el servidor
         let API_BASE_URL = 'https://backend-onlineclustering.onrender.com'; // Fallback por si falla
@@ -132,6 +139,42 @@
         let stopProcess = false;
         let procesoCompletado = false;
         let detectedLabelsSet = new Set();
+        // Acumulador local de últimas asignaciones por cluster
+        let latestClusterSummary = {};
+        const MAX_PER_CLUSTER = 50; // mantener sólo las últimas N entradas por cluster
+
+        function renderClusterSummary() {
+            const container = document.getElementById('clusterSummary');
+            container.innerHTML = '';
+            const keys = Object.keys(latestClusterSummary).sort((a,b) => Number(a) - Number(b));
+            if (keys.length === 0) {
+                container.innerHTML = '<em>No hay asignaciones todavía.</em>';
+                return;
+            }
+
+            keys.forEach(k => {
+                const list = latestClusterSummary[k];
+                const card = document.createElement('div');
+                card.style.padding = '10px';
+                card.style.marginBottom = '8px';
+                card.style.border = '1px solid #eee';
+                card.style.borderRadius = '8px';
+                card.style.background = '#fff';
+
+                const title = document.createElement('div');
+                title.innerHTML = `<strong>Cluster ${k}</strong> — ${list.length} items`;
+                title.style.marginBottom = '6px';
+                card.appendChild(title);
+
+                const items = document.createElement('div');
+                items.style.fontSize = '13px';
+                items.style.color = '#444';
+                items.innerText = list.join('\n');
+                card.appendChild(items);
+
+                container.appendChild(card);
+            });
+        }
 
         function shuffleWithSeed(array, seed) {
             let m = array.length, t, i;
@@ -233,6 +276,18 @@
                         const logLine = `> ${item.filename.padEnd(25)} | Cluster: ${clusterInfo.cluster < 0 ? 'Buffer' : clusterInfo.cluster}\n`;
                         output.textContent += logLine;
                     });
+                    // Mergear resumen por cluster (si el backend lo envió)
+                    if (data.by_cluster) {
+                        for (let cid in data.by_cluster) {
+                            if (!latestClusterSummary[cid]) latestClusterSummary[cid] = [];
+                            // append filenames keeping uniqueness and recency
+                            data.by_cluster[cid].forEach(fn => latestClusterSummary[cid].push(fn));
+                            if (latestClusterSummary[cid].length > MAX_PER_CLUSTER) {
+                                latestClusterSummary[cid] = latestClusterSummary[cid].slice(-MAX_PER_CLUSTER);
+                            }
+                        }
+                        renderClusterSummary();
+                    }
                     output.scrollTop = output.scrollHeight;
                 } catch (err) {
                     output.textContent += `!! Error en batch ${Math.floor(i/BATCH_SIZE + 1)}: ${err.message}\n`;
