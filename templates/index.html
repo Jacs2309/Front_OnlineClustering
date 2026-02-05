@@ -27,92 +27,139 @@
 </head>
 <body>
 
-    <div class="controls">
-        <h1>Clustering de Imágenes Online</h1>
-        <div class="grid-inputs">
-            <div class="input-group">
-                <label>Carpeta de Imágenes:</label>
-                <input type="file" id="folderInput" webkitdirectory directory multiple>
-            </div>
-            <div class="input-group">
-                <label>Semilla:</label>
-                <input type="number" id="seedInput" value="42" style="width: 60px;">
-            </div>
-            <div class="input-group">
-                <label>K (Clusters):</label>
-                <input type="number" id="kInput" value="4" style="width: 60px;">
-            </div>
-            <div class="input-group">
-                <label>Máx Tamaños (sep. por coma):</label>
-                <input type="text" id="maxSizesInput" value="300, 306, 405, 300" style="width: 150px;">
-            </div>
-            <div class="input-group">
-                <label>Tipo de Datos:</label>
-                <select id="dataTypeSelect">
-                    <option value="tumores">Tumores</option>
-                    <option value="animales">Animales</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label>Extractor:</label>
-                <select id="extractorSelect">
-                    <option value="hu">Hu Moments</option>
-                    <option value="zernike">Zernike</option>
-                    <option value="hog">HOG</option>
-                    <option value="sift">SIFT</option>
-                    <option value="cnn">CNN (MobileNet)</option>
-                </select>
-            </div>
-            <button onclick="startProcess()" id="btnRun" style="background: #27ae60; color: white;">Iniciar Proceso</button>
-            <button onclick="resetAll()" id="btnReset" style="background: #e74c3c; color: white;">Reiniciar</button>
+<!-- =========================
+     CONTROLES PRINCIPALES
+     ========================= -->
+<div class="controls">
+    <h1>Clustering de Imágenes Online</h1>
+
+    <div class="grid-inputs">
+
+        <!-- Selección de carpeta -->
+        <div class="input-group">
+            <label>Carpeta de Imágenes:</label>
+            <input type="file" id="folderInput" webkitdirectory directory multiple>
         </div>
+
+        <!-- Semilla para aleatoriedad reproducible -->
+        <div class="input-group">
+            <label>Semilla:</label>
+            <input type="number" id="seedInput" value="42" style="width: 60px;">
+        </div>
+
+        <!-- Número de clusters -->
+        <div class="input-group">
+            <label>K (Clusters):</label>
+            <input type="number" id="kInput" value="4" style="width: 60px;">
+        </div>
+
+        <!-- Tamaños máximos por cluster -->
+        <div class="input-group">
+            <label>Máx Tamaños (sep. por coma):</label>
+            <input type="text" id="maxSizesInput"
+                   value="300, 306, 405, 300" style="width: 150px;">
+        </div>
+
+        <!-- Tipo de dataset -->
+        <div class="input-group">
+            <label>Tipo de Datos:</label>
+            <select id="dataTypeSelect">
+                <option value="tumores">Tumores</option>
+                <option value="animales">Animales</option>
+            </select>
+        </div>
+
+        <!-- Extractor de características -->
+        <div class="input-group">
+            <label>Extractor:</label>
+            <select id="extractorSelect">
+                <option value="hu">Hu Moments</option>
+                <option value="zernike">Zernike</option>
+                <option value="hog">HOG</option>
+                <option value="sift">SIFT</option>
+                <option value="cnn">CNN (MobileNet)</option>
+            </select>
+        </div>
+
+        <!-- Acciones -->
+        <button onclick="startProcess()" id="btnRun"
+                style="background: #27ae60; color: white;">
+            Iniciar Proceso
+        </button>
+
+        <button onclick="resetAll()" id="btnReset"
+                style="background: #e74c3c; color: white;">
+            Reiniciar
+        </button>
+    </div>
+</div>
+
+<!-- Consola de logs -->
+<div id="output">Esperando archivos...</div>
+
+<!-- =========================
+     MÉTRICAS
+     ========================= -->
+<div class="controls" style="margin-top: 20px;">
+    <h2>Evaluación de Resultados</h2>
+
+    <div id="trueLabels" style="margin-bottom: 15px; color: #7f8c8d;">
+        Clases detectadas en carpetas: —
     </div>
 
-    <div id="output">Esperando archivos...</div>
+    <button onclick="fetchMetrics()" id="btnMetrics"
+            style="background: #3498db; color: white;">
+        Actualizar Métricas
+    </button>
 
-    <div class="controls" style="margin-top: 20px;">
-        <h2>Evaluación de Resultados</h2>
-        <div id="trueLabels" style="margin-bottom: 15px; color: #7f8c8d;">Clases detectadas en carpetas: —</div>
-        <button onclick="fetchMetrics()" id="btnMetrics" style="background: #3498db; color: white;">Actualizar Métricas</button>
-        
-        <div class="metric-container">
-            <div>
-                <h3>Métricas Externas (Calidad)</h3>
-                <table id="externalTable" style="display: none;">
-                    <thead>
-                        <tr>
-                            <th>Método</th>
-                            <th>ARI</th>
-                            <th>NMI</th>
-                            <th>AMI</th>
-                        </tr>
-                    </thead>
-                    <tbody id="externalBody"></tbody>
-                </table>
-            </div>
-            <div>
-                <h3>Métricas Internas (Cohesión)</h3>
-                <table id="internalTable" style="display: none;">
-                    <thead>
-                        <tr>
-                            <th>Método</th>
-                            <th>Silueta</th>
-                            <th>Dunn</th>
-                            <th>Distribución</th>
-                        </tr>
-                    </thead>
-                    <tbody id="internalBody"></tbody>
-                </table>
-            </div>
+    <div class="metric-container">
+        <!-- Métricas externas -->
+        <div>
+            <h3>Métricas Externas (Calidad)</h3>
+            <table id="externalTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Método</th>
+                        <th>ARI</th>
+                        <th>NMI</th>
+                        <th>AMI</th>
+                    </tr>
+                </thead>
+                <tbody id="externalBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Métricas internas -->
+        <div>
+            <h3>Métricas Internas (Cohesión)</h3>
+            <table id="internalTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Método</th>
+                        <th>Silueta</th>
+                        <th>Dunn</th>
+                        <th>Distribución</th>
+                    </tr>
+                </thead>
+                <tbody id="internalBody"></tbody>
+            </table>
         </div>
     </div>
+</div>
 
-    <div class="controls" style="margin-top: 20px;">
-        <h2>Resumen por Cluster (Últimas asignaciones)</h2>
-        <div id="clusterSummary" style="min-height:60px; color:#333;">
-            <em>No hay asignaciones todavía.</em>
-        </div>
+<!-- =========================
+     RESUMEN POR CLUSTER
+     ========================= -->
+<div class="controls" style="margin-top: 20px;">
+    <h2>Resumen por Cluster (Últimas asignaciones)</h2>
+    <div id="clusterSummary" style="min-height:60px; color:#333;">
+        <em>No hay asignaciones todavía.</em>
     </div>
+</div>
+
+<!-- =========================
+     LÓGICA JAVASCRIPT
+     ========================= -->
 
     <script>
         // Obtener URL del backend desde el servidor
